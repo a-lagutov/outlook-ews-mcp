@@ -16,7 +16,7 @@ testable Python service — no direct mailbox scripting required.
 
 > **Renamed from `outlook-mcp`.** That name was already taken on PyPI by an unrelated
 > project, so the distribution and CLI name are now `outlook-ews-mcp`. The Python import
-> path is unchanged. Until the first tagged PyPI release, install from this repository as
+> path is unchanged. This fork is not published to PyPI; install from this repository as
 > shown below.
 
 ## Contents
@@ -27,8 +27,9 @@ testable Python service — no direct mailbox scripting required.
 - [Security notes](#security-notes)
 - [Quick start](#quick-start)
 - [Configuration](#configuration)
+- [Reply drafts, Outlook mentions, and send confirmation](#reply-drafts-outlook-mentions-and-send-confirmation)
 - [Request queue](#request-queue)
-- [Claude Desktop example](#claude-desktop-example)
+- [Claude Desktop / Claude Code example](#claude-desktop--claude-code-example)
 - [Smoke check](#smoke-check)
 - [Docker](#docker)
 - [CI/CD](#cicd)
@@ -39,10 +40,10 @@ testable Python service — no direct mailbox scripting required.
 
 ## Highlights
 
+- **System** — Inbox Rules, Out-of-Office (automatic replies), read-only delegate listing
 - **Email** — list, search (substring or Advanced Query Syntax), read, send, reply,
   forward, move, copy, delete, mark, categorize, bulk actions, raw MIME export,
   attachment add/delete
-- **System** — Inbox Rules, Out-of-Office (automatic replies), read-only delegate listing
 - **Calendar** — list, create, update, delete, respond to invites, find free slots, view a
   shared/delegate mailbox's calendar, Room Finder, bulk actions
 - **Contacts** — search, read, create, update, delete
@@ -167,7 +168,8 @@ that never modify the mailbox — they get more concurrency (see
 
 **What you should still be careful with:**
 
-- `EXCHANGE_VERIFY_SSL=false` disables TLS certificate verification — trusted internal/self-signed environments only.
+- `EXCHANGE_VERIFY_SSL=false` disables TLS certificate verification — trusted internal/self-signed
+  environments only. Prefer `EXCHANGE_CA_BUNDLE`, which keeps verification on.
 - `EXCHANGE_AUTH_TYPE=Basic` sends credentials in the clear, so the server refuses to
   start against an `http://` `EXCHANGE_SERVER`; only override with
   `EXCHANGE_ALLOW_INSECURE_BASIC_AUTH=true` for a local/test server you control.
@@ -189,9 +191,11 @@ that never modify the mailbox — they get more concurrency (see
 ## Quick start
 
 ```bash
+git clone https://github.com/a-lagutov/outlook-ews-mcp
+cd outlook-ews-mcp
 uv venv
 source .venv/bin/activate
-uv pip install -e .[dev]
+uv pip install -e '.[dev]'
 cp .env.example .env
 outlook-ews-mcp
 ```
@@ -262,7 +266,7 @@ A fully commented copy of every variable lives in [`.env.example`](.env.example)
 Use `create_reply_draft` to prepare an actual EWS reply for review. It defaults to
 `reply_all: true`, keeps the source conversation and reply references, and accepts
 `additional_to`, `additional_cc` and `attachments`. Call `send_draft` only after
-review. `reply_email` still sends immediately; it now also accepts HTML and mentions.
+review. `reply_email` still sends immediately; it also accepts HTML and mentions.
 
 For `send_email`, `create_draft`, `reply_email`, `create_reply_draft` and
 `update_draft`, use explicit mention tokens and metadata:
@@ -344,13 +348,16 @@ runs it in worker threads and admits calls through one shared FIFO queue.
   by that wall-clock budget. Writes are never auto-retried. Overruns past the expected
   budget are logged.
 
-## Claude Desktop example
+## Claude Desktop / Claude Code example
+
+GUI clients don't see the virtualenv's `bin` directory, so use the absolute path to the
+installed script:
 
 ```json
 {
   "mcpServers": {
     "outlook": {
-      "command": "outlook-ews-mcp",
+      "command": "/path/to/outlook-ews-mcp/.venv/bin/outlook-ews-mcp",
       "env": {
         "EXCHANGE_SERVER": "https://mail.company.com/EWS/Exchange.asmx",
         "EXCHANGE_USERNAME": "DOMAIN\\username",
@@ -361,6 +368,12 @@ runs it in worker threads and admits calls through one shared FIFO queue.
     }
   }
 }
+```
+
+Claude Code (credentials are read from the repository's `.env`):
+
+```bash
+claude mcp add outlook -- sh -c 'cd /path/to/outlook-ews-mcp && exec .venv/bin/outlook-ews-mcp'
 ```
 
 ## Smoke check
@@ -392,7 +405,7 @@ audit, and package builds, using the `uv` version pinned in `pyproject.toml`.
 
 | | |
 | --- | --- |
-| GitHub | Additionally publishes tagged releases (`v*`) to PyPI via OIDC trusted publishing. Before the first release, configure a PyPI pending publisher for repository `a-lagutov/outlook-ews-mcp`, workflow `ci.yml`, and environment `pypi` — no long-lived PyPI token is stored in GitHub. |
+| GitHub | Runs the checks only; nothing is published to PyPI. |
 | GitLab | Additionally builds and pushes a Docker image to the GitLab Container Registry on the default branch and on tags, using the built-in `CI_REGISTRY` / `CI_REGISTRY_USER` / `CI_REGISTRY_PASSWORD` / `CI_REGISTRY_IMAGE` variables. |
 
 Default image tagging behavior:
@@ -405,8 +418,9 @@ Default image tagging behavior:
 ## Development
 
 ```bash
-uv run --python 3.12 --with '.[dev]' ruff check .
-uv run --python 3.12 --with '.[dev]' pytest -q
+uv sync --extra dev
+uv run ruff check .
+uv run pytest -q
 ```
 
 ## Project notes
