@@ -105,6 +105,7 @@ def test_attachment_limits_use_exchange_prefixed_aliases():
         "EXCHANGE_VERSION",
         "EXCHANGE_IMPERSONATE_AS",
         "EXCHANGE_ATTACHMENT_ROOT",
+        "EXCHANGE_CA_BUNDLE",
         "LOG_FILE",
     ],
 )
@@ -116,6 +117,7 @@ def test_blank_optional_env_values_mean_unset(env_name, blank):
         "EXCHANGE_VERSION": "exchange_version",
         "EXCHANGE_IMPERSONATE_AS": "exchange_impersonate_as",
         "EXCHANGE_ATTACHMENT_ROOT": "attachment_root",
+        "EXCHANGE_CA_BUNDLE": "exchange_ca_bundle",
         "LOG_FILE": "log_file",
     }[env_name]
 
@@ -135,3 +137,35 @@ def test_blank_attachment_root_does_not_become_the_current_directory():
 def test_attachment_root_must_be_absolute():
     with pytest.raises(ValidationError, match="must be an absolute path"):
         Settings(_env_file=None, **_kwargs(EXCHANGE_ATTACHMENT_ROOT="relative/path"))
+
+
+def test_tls_verify_defaults_to_system_store():
+    settings = Settings(_env_file=None, **_kwargs())
+
+    assert settings.exchange_tls_verify is True
+
+
+def test_tls_verify_uses_ca_bundle_when_set(tmp_path):
+    bundle = tmp_path / "ca.pem"
+    bundle.write_text("dummy")
+
+    settings = Settings(_env_file=None, **_kwargs(EXCHANGE_CA_BUNDLE=str(bundle)))
+
+    assert settings.exchange_tls_verify == str(bundle)
+
+
+def test_tls_verify_disabled_ignores_ca_bundle(tmp_path):
+    bundle = tmp_path / "ca.pem"
+    bundle.write_text("dummy")
+
+    settings = Settings(
+        _env_file=None,
+        **_kwargs(EXCHANGE_CA_BUNDLE=str(bundle), EXCHANGE_VERIFY_SSL="false"),
+    )
+
+    assert settings.exchange_tls_verify is False
+
+
+def test_missing_ca_bundle_is_rejected(tmp_path):
+    with pytest.raises(ValidationError, match="EXCHANGE_CA_BUNDLE file not found"):
+        Settings(_env_file=None, **_kwargs(EXCHANGE_CA_BUNDLE=str(tmp_path / "nope.pem")))

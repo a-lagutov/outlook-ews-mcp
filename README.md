@@ -222,6 +222,7 @@ A fully commented copy of every variable lives in [`.env.example`](.env.example)
 | `EXCHANGE_AUTH_TYPE` | `NTLM` | `NTLM` or `Basic` |
 | `EXCHANGE_ALLOW_INSECURE_BASIC_AUTH` | `false` | Allow `Basic` auth over `http://` — local/test servers only |
 | `EXCHANGE_VERIFY_SSL` | `true` | Verify the server's TLS certificate; `false` only for trusted internal/self-signed setups |
+| `EXCHANGE_CA_BUNDLE` | unset (OS trust store) | PEM file to verify the server certificate against instead of the OS trust store |
 | `EXCHANGE_VERSION` | unset (auto-detected) | Exchange server version, e.g. `EXCHANGE_2016` |
 | `EXCHANGE_TIMEZONE_FALLBACK` | `Europe/Moscow` | Used only when Exchange reports an unresolvable GUID timezone id; normal operations use the mailbox's own default timezone |
 | `EXCHANGE_TIMEOUT` | `30` | Per-request timeout in seconds (1–300) |
@@ -391,7 +392,7 @@ audit, and package builds, using the `uv` version pinned in `pyproject.toml`.
 
 | | |
 | --- | --- |
-| GitHub | Additionally publishes tagged releases (`v*`) to PyPI via OIDC trusted publishing. Before the first release, configure a PyPI pending publisher for repository `viartemev/outlook-ews-mcp`, workflow `ci.yml`, and environment `pypi` — no long-lived PyPI token is stored in GitHub. |
+| GitHub | Additionally publishes tagged releases (`v*`) to PyPI via OIDC trusted publishing. Before the first release, configure a PyPI pending publisher for repository `a-lagutov/outlook-ews-mcp`, workflow `ci.yml`, and environment `pypi` — no long-lived PyPI token is stored in GitHub. |
 | GitLab | Additionally builds and pushes a Docker image to the GitLab Container Registry on the default branch and on tags, using the built-in `CI_REGISTRY` / `CI_REGISTRY_USER` / `CI_REGISTRY_PASSWORD` / `CI_REGISTRY_IMAGE` variables. |
 
 Default image tagging behavior:
@@ -422,4 +423,5 @@ vulnerability reports, see [SECURITY.md](SECURITY.md).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). Fork of
+[viartemev/outlook-ews-mcp](https://github.com/viartemev/outlook-ews-mcp).

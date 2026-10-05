@@ -235,6 +235,7 @@ EXCHANGE_AUTH_TYPE=NTLM
 | `EXCHANGE_AUTH_TYPE` | `NTLM` | `NTLM` или `Basic` |
 | `EXCHANGE_ALLOW_INSECURE_BASIC_AUTH` | `false` | Разрешить `Basic`-аутентификацию по `http://` — только для локальных/тестовых серверов |
 | `EXCHANGE_VERIFY_SSL` | `true` | Проверять TLS-сертификат сервера; `false` только для доверенных внутренних/самоподписанных окружений |
+| `EXCHANGE_CA_BUNDLE` | не задано (системное хранилище) | PEM-файл, по которому проверять сертификат сервера вместо системного хранилища |
 | `EXCHANGE_VERSION` | не задано (автоопределение) | Версия сервера Exchange, например `EXCHANGE_2016` |
 | `EXCHANGE_TIMEZONE_FALLBACK` | `Europe/Moscow` | Используется, только если Exchange вернул нераспознаваемый GUID часового пояса; в обычных операциях используется часовой пояс самого ящика |
 | `EXCHANGE_TIMEOUT` | `30` | Таймаут на один запрос, в секундах (1–300) |
@@ -413,7 +414,7 @@ docker run --rm --env-file .env outlook-ews-mcp
 
 | | |
 | --- | --- |
-| GitHub | Дополнительно публикует релизы по тегам (`v*`) в PyPI через OIDC trusted publishing. Перед первым релизом настройте PyPI pending publisher для репозитория `viartemev/outlook-ews-mcp`, workflow `ci.yml` и окружения `pypi` — долгоживущий PyPI-токен в GitHub не хранится. |
+| GitHub | Дополнительно публикует релизы по тегам (`v*`) в PyPI через OIDC trusted publishing. Перед первым релизом настройте PyPI pending publisher для репозитория `a-lagutov/outlook-ews-mcp`, workflow `ci.yml` и окружения `pypi` — долгоживущий PyPI-токен в GitHub не хранится. |
 | GitLab | Дополнительно собирает и пушит Docker-образ в GitLab Container Registry на default-ветке и по тегам, используя встроенные переменные `CI_REGISTRY` / `CI_REGISTRY_USER` / `CI_REGISTRY_PASSWORD` / `CI_REGISTRY_IMAGE`. |
 
 Тегирование образов по умолчанию:
@@ -445,4 +446,5 @@ uv run --python 3.12 --with '.[dev]' pytest -q
 
 ## Лицензия
 
-MIT — см. [LICENSE](LICENSE).
+MIT — см. [LICENSE](LICENSE). Форк
+[viartemev/outlook-ews-mcp](https://github.com/viartemev/outlook-ews-mcp).
