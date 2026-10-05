@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     exchange_password: SecretStr = Field(alias="EXCHANGE_PASSWORD")
     exchange_email_address: str | None = Field(default=None, alias="EXCHANGE_EMAIL_ADDRESS")
     exchange_verify_ssl: bool = Field(default=True, alias="EXCHANGE_VERIFY_SSL")
+    #: Optional PEM bundle to verify the Exchange certificate against. Unset means
+    #: the OS trust store is used automatically (see build_default_backend).
+    exchange_ca_bundle: Path | None = Field(default=None, alias="EXCHANGE_CA_BUNDLE")
     exchange_auth_type: Literal["NTLM", "Basic"] = Field(
         default="NTLM",
         alias="EXCHANGE_AUTH_TYPE",
@@ -90,6 +93,7 @@ class Settings(BaseSettings):
         "exchange_email_address",
         "exchange_version",
         "exchange_impersonate_as",
+        "exchange_ca_bundle",
         "attachment_root",
         "log_file",
         mode="before",
@@ -111,6 +115,22 @@ class Settings(BaseSettings):
         if value is not None and not value.is_absolute():
             raise ValueError("EXCHANGE_ATTACHMENT_ROOT must be an absolute path")
         return value
+
+    @field_validator("exchange_ca_bundle")
+    @classmethod
+    def _ca_bundle_must_exist(cls, value: Path | None) -> Path | None:
+        if value is not None and not value.expanduser().is_file():
+            raise ValueError(f"EXCHANGE_CA_BUNDLE file not found: {value}")
+        return value.expanduser() if value is not None else None
+
+    @property
+    def exchange_tls_verify(self) -> bool | str:
+        """Value for requests' `verify`: False, a CA bundle path, or True (default store)."""
+        if not self.exchange_verify_ssl:
+            return False
+        if self.exchange_ca_bundle is not None:
+            return str(self.exchange_ca_bundle)
+        return True
 
     @model_validator(mode="after")
     def _reject_insecure_basic_auth(self) -> "Settings":
