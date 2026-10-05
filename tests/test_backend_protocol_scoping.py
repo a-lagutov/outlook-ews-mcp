@@ -192,7 +192,7 @@ def test_delegate_account_cache_is_bounded_and_case_insensitive(monkeypatch) -> 
     backend = EWSExchangeBackend(_settings())
     configured = (
         backend.settings.exchange_timeout,
-        backend.settings.exchange_verify_ssl,
+        backend.settings.exchange_tls_verify,
         backend.settings.mcp_max_concurrency + 1,
     )
     protocol = SimpleNamespace(config=object(), _outlook_mcp_config=configured)

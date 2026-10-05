@@ -263,7 +263,7 @@ class BaseEWSBackend:
         """
         desired = (
             self.settings.exchange_timeout,
-            self.settings.exchange_verify_ssl,
+            self.settings.exchange_tls_verify,
             self.settings.mcp_max_concurrency + 1,
         )
         with _PROTOCOL_CONFIG_LOCK:
@@ -275,7 +275,7 @@ class BaseEWSBackend:
                         "conflicting settings for a shared Exchange protocol",
                         details=[
                             {
-                                "field": "EXCHANGE_TIMEOUT/EXCHANGE_VERIFY_SSL/MCP_MAX_CONCURRENCY",
+                                "field": "EXCHANGE_TIMEOUT/EXCHANGE_VERIFY_SSL/EXCHANGE_CA_BUNDLE/MCP_MAX_CONCURRENCY",
                                 "reason": "the same endpoint and credentials are already active with different settings",
                             }
                         ],
@@ -286,7 +286,7 @@ class BaseEWSBackend:
             if hasattr(protocol, "_session_pool_lock"):
                 protocol.max_connections = self.settings.mcp_max_concurrency + 1
 
-            verify_ssl = self.settings.exchange_verify_ssl
+            verify_ssl = self.settings.exchange_tls_verify
             original_raw_session = protocol.raw_session
 
             def raw_session_with_verify(

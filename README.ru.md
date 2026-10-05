@@ -235,6 +235,7 @@ EXCHANGE_AUTH_TYPE=NTLM
 | `EXCHANGE_AUTH_TYPE` | `NTLM` | `NTLM` или `Basic` |
 | `EXCHANGE_ALLOW_INSECURE_BASIC_AUTH` | `false` | Разрешить `Basic`-аутентификацию по `http://` — только для локальных/тестовых серверов |
 | `EXCHANGE_VERIFY_SSL` | `true` | Проверять TLS-сертификат сервера; `false` только для доверенных внутренних/самоподписанных окружений |
+| `EXCHANGE_CA_BUNDLE` | не задано (системное хранилище) | PEM-файл, по которому проверять сертификат сервера вместо системного хранилища |
 | `EXCHANGE_VERSION` | не задано (автоопределение) | Версия сервера Exchange, например `EXCHANGE_2016` |
 | `EXCHANGE_TIMEZONE_FALLBACK` | `Europe/Moscow` | Используется, только если Exchange вернул нераспознаваемый GUID часового пояса; в обычных операциях используется часовой пояс самого ящика |
 | `EXCHANGE_TIMEOUT` | `30` | Таймаут на один запрос, в секундах (1–300) |
