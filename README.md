@@ -392,7 +392,7 @@ audit, and package builds, using the `uv` version pinned in `pyproject.toml`.
 
 | | |
 | --- | --- |
-| GitHub | Additionally publishes tagged releases (`v*`) to PyPI via OIDC trusted publishing. Before the first release, configure a PyPI pending publisher for repository `viartemev/outlook-ews-mcp`, workflow `ci.yml`, and environment `pypi` — no long-lived PyPI token is stored in GitHub. |
+| GitHub | Additionally publishes tagged releases (`v*`) to PyPI via OIDC trusted publishing. Before the first release, configure a PyPI pending publisher for repository `a-lagutov/outlook-ews-mcp`, workflow `ci.yml`, and environment `pypi` — no long-lived PyPI token is stored in GitHub. |
 | GitLab | Additionally builds and pushes a Docker image to the GitLab Container Registry on the default branch and on tags, using the built-in `CI_REGISTRY` / `CI_REGISTRY_USER` / `CI_REGISTRY_PASSWORD` / `CI_REGISTRY_IMAGE` variables. |
 
 Default image tagging behavior:
@@ -423,4 +423,5 @@ vulnerability reports, see [SECURITY.md](SECURITY.md).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). Fork of
+[viartemev/outlook-ews-mcp](https://github.com/viartemev/outlook-ews-mcp).

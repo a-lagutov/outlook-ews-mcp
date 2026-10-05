@@ -414,7 +414,7 @@ docker run --rm --env-file .env outlook-ews-mcp
 
 | | |
 | --- | --- |
-| GitHub | Дополнительно публикует релизы по тегам (`v*`) в PyPI через OIDC trusted publishing. Перед первым релизом настройте PyPI pending publisher для репозитория `viartemev/outlook-ews-mcp`, workflow `ci.yml` и окружения `pypi` — долгоживущий PyPI-токен в GitHub не хранится. |
+| GitHub | Дополнительно публикует релизы по тегам (`v*`) в PyPI через OIDC trusted publishing. Перед первым релизом настройте PyPI pending publisher для репозитория `a-lagutov/outlook-ews-mcp`, workflow `ci.yml` и окружения `pypi` — долгоживущий PyPI-токен в GitHub не хранится. |
 | GitLab | Дополнительно собирает и пушит Docker-образ в GitLab Container Registry на default-ветке и по тегам, используя встроенные переменные `CI_REGISTRY` / `CI_REGISTRY_USER` / `CI_REGISTRY_PASSWORD` / `CI_REGISTRY_IMAGE`. |
 
 Тегирование образов по умолчанию:
@@ -446,4 +446,5 @@ uv run --python 3.12 --with '.[dev]' pytest -q
 
 ## Лицензия
 
-MIT — см. [LICENSE](LICENSE).
+MIT — см. [LICENSE](LICENSE). Форк
+[viartemev/outlook-ews-mcp](https://github.com/viartemev/outlook-ews-mcp).

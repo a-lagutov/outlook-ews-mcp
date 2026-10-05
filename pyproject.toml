@@ -50,9 +50,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/viartemev/outlook-ews-mcp"
-Repository = "https://github.com/viartemev/outlook-ews-mcp"
-Issues = "https://github.com/viartemev/outlook-ews-mcp/issues"
+Homepage = "https://github.com/a-lagutov/outlook-ews-mcp"
+Repository = "https://github.com/a-lagutov/outlook-ews-mcp"
+Issues = "https://github.com/a-lagutov/outlook-ews-mcp/issues"
 
 [project.scripts]
 outlook-ews-mcp = "outlook_mcp.server:main"
