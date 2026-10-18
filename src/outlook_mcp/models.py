@@ -234,6 +234,10 @@ class SendEmailRequest(MentionBody):
     attachments: list[Path] = Field(default_factory=list)
     importance: Literal["low", "normal", "high"] = "normal"
     include_signature: bool = True
+    #: Send from a shared mailbox instead of the service account's own; the sent
+    #: copy lands in that mailbox's Sent Items. Needs "Send As" (or "Send on
+    #: Behalf") rights on the server side -- this only picks the sender.
+    from_mailbox: EmailStr | None = None
 
 
 class ReplyEmailRequest(MentionBody):

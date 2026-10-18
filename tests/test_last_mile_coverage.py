@@ -808,3 +808,50 @@ def test_timezone_fallback_double_checked_lock_inner_branch(settings, monkeypatc
 
     # The inner check won: from_ms_id was not wrapped a second time.
     assert EWSTimeZone.from_ms_id == original
+
+
+def test_send_email_from_shared_mailbox_uses_its_account(settings, monkeypatch) -> None:
+    """from_mailbox must make the shared mailbox both sender and Sent Items owner,
+    not just a label on a message still sent from the service account."""
+    import outlook_mcp.exchange_client.email as email_module
+
+    shared_account = SimpleNamespace(drafts="shared-drafts", sent="shared-sent")
+    captured: dict[str, object] = {}
+
+    class SendingMessage(SimpleNamespace):
+        def __init__(self, **kwargs):
+            captured["account"] = kwargs.pop("account", None)
+            kwargs.pop("folder", None)
+            super().__init__(**kwargs)
+            self.id = "sent-2"
+
+        def send_and_save(self):
+            captured["folder"] = self.folder
+
+    monkeypatch.setattr(email_module, "Message", SendingMessage)
+    backend = _backend(settings, drafts=_FOLDER, sent=_FOLDER)
+    requested: list[str] = []
+    monkeypatch.setattr(
+        backend, "_account_for", lambda mailbox: requested.append(mailbox) or shared_account
+    )
+
+    from outlook_mcp.models import SendEmailRequest
+
+    result = backend.send_email(
+        SendEmailRequest(
+            to=["u@example.com"], subject="S", body="B", from_mailbox="team@example.com"
+        )
+    )
+
+    assert requested == ["team@example.com"]
+    assert captured == {"account": shared_account, "folder": "shared-sent"}
+    assert result.sent_copy_mailbox == "team@example.com"
+
+
+def test_send_email_rejects_invalid_from_mailbox() -> None:
+    from pydantic import ValidationError
+
+    from outlook_mcp.models import SendEmailRequest
+
+    with pytest.raises(ValidationError):
+        SendEmailRequest(to=["u@example.com"], subject="S", body="B", from_mailbox="not-an-email")

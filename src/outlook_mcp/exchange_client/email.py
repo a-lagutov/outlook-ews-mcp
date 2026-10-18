@@ -14,7 +14,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from exchangelib import FileAttachment, Folder, HTMLBody, ItemAttachment, Message, Q
+from exchangelib import Account, FileAttachment, Folder, HTMLBody, ItemAttachment, Message, Q
 from exchangelib.errors import (
     ErrorInvalidRestriction,
     ErrorItemNotFound,
@@ -286,15 +286,18 @@ class EmailOperationsMixin(BaseEWSBackend):
         separator = "<br><br>" if body_type == "html" else "\n\n"
         return f"{body}{separator}{signature}"
 
-    def _make_message(self, request: SendEmailRequest | DraftEmailRequest) -> Message:
+    def _make_message(
+        self, request: SendEmailRequest | DraftEmailRequest, account: Account | None = None
+    ) -> Message:
+        account = account or self.account
         body = self._outgoing_body(
             request.body, request.body_type, request.mentions, request.include_signature
         )
         reply_to: str | None = getattr(request, "reply_to", None)
         importance: str | None = getattr(request, "importance", None)
         message = Message(
-            account=self.account,
-            folder=self.account.drafts,
+            account=account,
+            folder=account.drafts,
             subject=request.subject,
             body=body,
             to_recipients=[self._mailbox(address) for address in request.to],
@@ -712,15 +715,24 @@ class EmailOperationsMixin(BaseEWSBackend):
         return list(qs[:limit])
 
     def send_email(self, request: SendEmailRequest) -> SendResult:
-        message = self._make_message(request)
+        # A shared mailbox is addressed as its own delegate Account, so both the
+        # sender and the Sent Items copy belong to it rather than to the service account.
+        account = (
+            self._account_for(str(request.from_mailbox)) if request.from_mailbox else self.account
+        )
+        message = self._make_message(request, account)
         # _make_message leaves the copy folder as Drafts; send_and_save() saves the
         # sent copy into self.folder, so point it at Sent instead -- otherwise the
         # message is delivered but its copy lands in Drafts.
-        message.folder = self.account.sent
+        message.folder = account.sent
         try:
             message.send_and_save()
             # send_and_save() doesn't hand back the id of the sent-and-saved copy.
-            return SendResult(id=message.id or None, status="submitted")
+            return SendResult(
+                id=message.id or None,
+                status="submitted",
+                sent_copy_mailbox=str(request.from_mailbox) if request.from_mailbox else None,
+            )
         except Exception as exc:  # noqa: BLE001
             raise self._map_exception(exc) from exc
 

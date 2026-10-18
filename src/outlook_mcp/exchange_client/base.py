@@ -177,7 +177,7 @@ class BaseEWSBackend:
         return account
 
     def _account_for(self, mailbox: str) -> Account:
-        """A secondary Account for viewing another mailbox's calendar.
+        """A secondary Account for another mailbox (delegate calendar, shared-mailbox send).
 
         Reuses the primary account's already-authenticated Configuration (and,
         via exchangelib's own protocol caching, its underlying Protocol/session

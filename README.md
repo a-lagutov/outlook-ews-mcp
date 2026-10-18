@@ -88,7 +88,7 @@ that never modify the mailbox — they get more concurrency (see
 | `get_email_mime` | Export a message's raw RFC 822 MIME content, base64-encoded | ✅ |
 | `get_thread` | Get every message of a conversation in order, bodies included | ✅ |
 | `search_emails` | Search by substring (subject/body/sender) or server-side Advanced Query Syntax | ✅ |
-| `send_email` | Send a new email | |
+| `send_email` | Send a new email; `from_mailbox` sends from a shared mailbox (needs Send As) | |
 | `reply_email` | Reply to an email | |
 | `forward_email` | Forward an email | |
 | `move_email` | Move an email to another folder | |

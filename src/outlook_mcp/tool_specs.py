@@ -190,7 +190,8 @@ TOOL_SPECS: list[ToolSpec] = [
     ),
     ToolSpec(
         "send_email",
-        "Send a new email",
+        "Send a new email. Set from_mailbox to send from a shared mailbox you have "
+        "Send As rights on; its Sent Items keeps the copy",
         send_email,
         request_model=models.SendEmailRequest,
         response_model=models.SendResult,
