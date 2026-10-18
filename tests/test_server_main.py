@@ -95,16 +95,16 @@ def test_configure_logging_does_not_leak_exchangelib_xml(settings: Settings, cap
     settings = settings.model_copy(update={"log_level": "DEBUG"})
     server_module.configure_logging(settings)
 
-    secret = "SUPER-SECRET-EMAIL-BODY-MARKER"
+    body_marker = "EMAIL-BODY-MARKER"
     xml_logger = logging.getLogger("exchangelib.util")
     xml_sub_logger = logging.getLogger("exchangelib.util.xml")
 
     with caplog.at_level(logging.DEBUG):
-        xml_logger.debug("Request XML: %s", secret)
-        xml_logger.error("TransportError: boom\nRequest XML: %s", secret)
-        xml_sub_logger.debug("Request XML: %s", secret)
+        xml_logger.debug("Request XML: %s", body_marker)
+        xml_logger.error("TransportError: boom\nRequest XML: %s", body_marker)
+        xml_sub_logger.debug("Request XML: %s", body_marker)
 
-    assert secret not in caplog.text
+    assert body_marker not in caplog.text
 
 
 def test_configure_logging_still_allows_outlook_mcp_debug_logs(settings: Settings, caplog) -> None:
