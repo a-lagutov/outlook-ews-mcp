@@ -28,8 +28,9 @@
 - [Заметки по безопасности](#заметки-по-безопасности)
 - [Быстрый старт](#быстрый-старт)
 - [Конфигурация](#конфигурация)
+- [Ответы в черновиках, упоминания и подтверждение отправки](#ответы-в-черновиках-упоминания-и-подтверждение-отправки)
 - [Очередь запросов](#очередь-запросов)
-- [Пример для Claude Desktop](#пример-для-claude-desktop)
+- [Пример для Claude Desktop / Claude Code](#пример-для-claude-desktop--claude-code)
 - [Smoke-проверка](#smoke-проверка)
 - [Docker](#docker)
 - [CI/CD](#cicd)
@@ -200,9 +201,11 @@
 ## Быстрый старт
 
 ```bash
+git clone https://github.com/viartemev/outlook-ews-mcp
+cd outlook-ews-mcp
 uv venv
 source .venv/bin/activate
-uv pip install -e .[dev]
+uv pip install -e '.[dev]'
 cp .env.example .env
 outlook-ews-mcp
 ```
@@ -278,7 +281,7 @@ EXCHANGE_AUTH_TYPE=NTLM
 По умолчанию `reply_all: true`; сохраняются исходная беседа и ссылки на письмо.
 Можно передать `additional_to`, `additional_cc` и `attachments`. После проверки
 используйте `send_draft`. Инструмент `reply_email` по-прежнему отправляет сразу,
-но теперь поддерживает HTML и упоминания.
+но также поддерживает HTML и упоминания.
 
 В `send_email`, `create_draft`, `reply_email`, `create_reply_draft` и
 `update_draft` упоминания задаются явно:
@@ -308,7 +311,7 @@ EXCHANGE_AUTH_TYPE=NTLM
 При обновлении черновика пропущенные поля сохраняются; явный `null` очищает
 допускающее его поле, а `attachments: []` удаляет вложения. Для упоминаний нужно
 передать новое тело. Замена тела без упоминаний очищает старую метку уведомления.
-Обёртка MCP теперь сохраняет различие между пропущенным полем и явным пустым
+Обёртка MCP сохраняет различие между пропущенным полем и явным пустым
 значением — также для обновлений контактов и событий.
 
 `send_draft` сохраняет уникальный `submission_id`, однократно вызывает SendItem
@@ -364,13 +367,16 @@ EXCHANGE_AUTH_TYPE=NTLM
   повторяет только вызовы на чтение, ограниченный тем же бюджетом по времени. Записи
   никогда не повторяются автоматически. Превышения ожидаемого бюджета логируются.
 
-## Пример для Claude Desktop
+## Пример для Claude Desktop / Claude Code
+
+GUI-клиенты не видят директорию `bin` виртуального окружения, поэтому указывайте
+абсолютный путь к установленному скрипту:
 
 ```json
 {
   "mcpServers": {
     "outlook": {
-      "command": "outlook-ews-mcp",
+      "command": "/path/to/outlook-ews-mcp/.venv/bin/outlook-ews-mcp",
       "env": {
         "EXCHANGE_SERVER": "https://mail.company.com/EWS/Exchange.asmx",
         "EXCHANGE_USERNAME": "DOMAIN\\username",
@@ -381,6 +387,12 @@ EXCHANGE_AUTH_TYPE=NTLM
     }
   }
 }
+```
+
+Claude Code (учётные данные берутся из `.env` репозитория):
+
+```bash
+claude mcp add outlook -- sh -c 'cd /path/to/outlook-ews-mcp && exec .venv/bin/outlook-ews-mcp'
 ```
 
 ## Smoke-проверка
@@ -426,8 +438,9 @@ docker run --rm --env-file .env outlook-ews-mcp
 ## Разработка
 
 ```bash
-uv run --python 3.12 --with '.[dev]' ruff check .
-uv run --python 3.12 --with '.[dev]' pytest -q
+uv sync --extra dev
+uv run ruff check .
+uv run pytest -q
 ```
 
 ## Заметки о проекте
