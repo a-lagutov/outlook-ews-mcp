@@ -6,6 +6,10 @@ on:
     tags: ["v*"]
   pull_request:
 
+# Every job only reads the repo; keep the GITHUB_TOKEN least-privileged.
+permissions:
+  contents: read
+
 env:
   UV_VERSION: "0.12.1"
 
