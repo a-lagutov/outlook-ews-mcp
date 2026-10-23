@@ -410,6 +410,31 @@ def test_find_free_slots_never_produces_a_slot_past_end(settings, monkeypatch) -
     assert slots[0].end <= end
 
 
+def test_find_free_slots_start_at_23_00_does_not_overflow_hour(settings, monkeypatch) -> None:
+    """Regression guard: a slot starting at 23:00 must roll over into the next
+    day instead of crashing (datetime.replace(hour=24) raises ValueError)."""
+    backend = EWSExchangeBackend(settings)
+
+    class FakeProtocol:
+        def get_free_busy_info(self, **kwargs):
+            return [SimpleNamespace(merged="0" * 7)]
+
+    backend._account = SimpleNamespace(protocol=FakeProtocol(), default_timezone=UTC)
+    monkeypatch.setattr(backend, "_to_ews_datetime", lambda value: value)
+
+    slots = backend.find_free_slots(
+        FindFreeSlotsRequest(
+            attendees=["user@example.com"],
+            duration=60,
+            start=datetime(2026, 4, 8, 23, 0, tzinfo=UTC),
+            end=datetime(2026, 4, 9, 6, 0, tzinfo=UTC),
+            limit=1,
+        )
+    )
+
+    assert slots[0].end == datetime(2026, 4, 9, 0, 0, tzinfo=UTC)
+
+
 def test_find_free_slots_honors_response_limit(settings, monkeypatch) -> None:
     backend = EWSExchangeBackend(settings)
     start = datetime(2026, 4, 8, 9, 0, tzinfo=UTC)
