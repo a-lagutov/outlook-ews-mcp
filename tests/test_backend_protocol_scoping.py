@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import threading
-import time
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -127,21 +126,26 @@ def test_concurrent_account_access_builds_the_account_once() -> None:
     real_build_account = EWSExchangeBackend._build_account
     call_count = 0
     call_count_lock = threading.Lock()
+    all_callers_started = threading.Event()
+    start_barrier = threading.Barrier(16, action=all_callers_started.set)
 
     def slow_build_account(self):
         nonlocal call_count
         with call_count_lock:
             call_count += 1
-        # Widens the race window so concurrent callers overlap inside _build_account
-        # rather than happening to interleave around it.
-        time.sleep(0.05)
+        # Holds the build open until every caller has been released from the start
+        # barrier, so concurrent callers overlap inside _build_account.
+        assert all_callers_started.wait(timeout=5)
         return real_build_account(self)
 
     results: list[object] = []
     with patch.object(EWSExchangeBackend, "_build_account", slow_build_account):
-        threads = [
-            threading.Thread(target=lambda: results.append(backend.account)) for _ in range(16)
-        ]
+
+        def access_account() -> None:
+            start_barrier.wait(timeout=5)
+            results.append(backend.account)
+
+        threads = [threading.Thread(target=access_account) for _ in range(16)]
         for thread in threads:
             thread.start()
         for thread in threads:
